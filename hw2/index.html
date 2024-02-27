@@ -45,6 +45,9 @@
     <h1><a href='https://cal-cs184-student.github.io/hw-webpages-sp24-katherine-liu0/hw2/index.html'>link: https://cal-cs184-student.github.io/hw-webpages-sp24-katherine-liu0/hw2/index.html</a></h1>
     <h1>Homework 2</h1>
 
+    <h2>Overview</h2>
+    <p>In this homework, I covered concepts including Bezier Curves and mesh operations. The Bezier Curves section is primarily centered around the de Casteljau algorithm. In Part 1 I build Bezier Curves using control points, and in Part 2 I build Bezier Surfaces based on the curves. The following sections is centerted around manipulating triangle meshes using half-edged data structures. In Part 3, I implement the more smooth Phong shading to the teapot. In Part 4 and 5, I implement edge flip and split. In Part 6, I practice loop division to upsample a mesh.</p>
+
     <h2>Part 1</h2>
     <p>De Casteljau's algorithm for drawing Bezier curves involves the following steps: <br>Assume we have a set of control points, including a start point, an end point, and intermediate points.<br>For a first-order Bezier curve, only two control points, P0 and P1, need to be determined. Any point on the curve can be calculated using the following formula: Q(t) = (1 - t)P0 + tP1, where the value of t ranges from 0 to 1. For higher-order Bezier curves, the above formula can be recursively called to calculate the curve (subdivides the control points into smaller sets of control points/set of 2.)</p>
 
