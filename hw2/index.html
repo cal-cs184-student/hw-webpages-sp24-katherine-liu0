@@ -1,8 +1,10 @@
+
+<!doctype html>
 <html>
-	<head>
-		    <style>
+  <head>
+    <style>
       #container{
-        width: 50%;
+        width: 70%;
         margin: auto;
       }
 
@@ -32,20 +34,194 @@
       }
 
       img{
-        width: 300px;
+        width: 500px;
       }
 
     </style>
-	</head>
-	<body>
-		<div id="container">
-		<h1><a href='https://cal-cs184-student.github.io/hw-webpages-sp24-katherine-liu0/hw1/index.html'>link: https://cal-cs184-student.github.io/hw-webpages-sp24-katherine-liu0/hw2/index.html</a></h1>
-		<h1>Homework 1</h1>
+  </head>
+ 
+  <body>
+    <div id="container">
+    <h1><a href='https://cal-cs184-student.github.io/hw-webpages-sp24-katherine-liu0/hw2/index.html'>link: https://cal-cs184-student.github.io/hw-webpages-sp24-katherine-liu0/hw2/index.html</a></h1>
+    <h1>Homework 2</h1>
 
-		<h2>Part 1</h2>
-		
+    <h2>Part 1</h2>
+    <p>De Casteljau's algorithm for drawing Bezier curves involves the following steps: <br>Assume we have a set of control points, including a start point, an end point, and intermediate points.<br>For a first-order Bezier curve, only two control points, P0 and P1, need to be determined. Any point on the curve can be calculated using the following formula: Q(t) = (1 - t)P0 + tP1, where the value of t ranges from 0 to 1. For higher-order Bezier curves, the above formula can be recursively called to calculate the curve (subdivides the control points into smaller sets of control points/set of 2.)</p>
 
-			
-		</div>div>
-	</body>
+    <p>Here is a illustrative figure from lecture slides:<p>
+    <img src="1-slides.png" >
+    <br><br>
+
+
+    <p>Bezier curves are known for their good smoothness and interpolation effects. By adjusting the control points, the shape of the curve can be flexibly changed, making it suitable for drawing curves, graphic design, and other fields. However, it is important to choose an appropriate curve order to balance the complexity of the curve and computational efficiency.</p><br>
+
+    <p>Here is my curve with 6 control points:</p>
+
+    <p>Original control points:</p>
+
+    <img src="1-initial.png" ><br><br>
+
+    <p>Intermediate evaluated points:</p>
+
+    <img src="1-intermediates.png" ><br><br>
+
+    <p>Final evaluated point:</p>
+
+    <img src="1-final.png" ><br><br>
+
+    <p>The curve:</p>
+
+    <img src="1-curve.png" ><br><br>
+
+    <p>Modified control points and parameter t</p>
+
+    <img src="1-modified.png" ><br><br>
+
+<br>
+<br>
+<br>
+<br>
+    <h2>Part 2</h2>
+    <p>When de Casteljau's algorithm is extended to Bezier surfaces, it uses two-dimensional parameters (u, v) to represent points on the surface. By interpolating calculations on u and v, the coordinates of each point are obtained. Considering the layout of control points, the interpolation points in each direction are calculated step by step, eventually making the complete Bezier surface.<br><br>
+
+    Steps:
+
+    <br><strong>evaluateStep Function</strong><br>
+    Initialize an empty vector newPoints to store the newly interpolated points.<br>
+    For each pair of adjacent points in the input vector points, calculate an interpolated point based on the parameter t, using the formula (1−t)⋅point i+t⋅point i+1 <br>
+    Each new interpolated point is then added to newPoints.<br>
+    Once all pairs are processed, newPoints is returned, containing the interpolated points for this step.<br><br>
+    
+
+    <strong>evaluate1D Function</strong><br>
+    Start with the original vector of points and repeatedly applies evaluateStep to these points until only one point remains. This point is the final interpolated point for the given parameter t.<br>
+    In each iteration, evaluateStep reduces the number of points by one until the size of intermediatePoints is 1, indicating the final point on the Bezier curve for parameter t.<br><br>
+
+
+    <strong>evaluate Function</strong><br>
+    First apply evaluate1D to each row of control points using parameter u, which generates a set of intermediate points. These points can be seen as control points that define the Bezier curves in the v direction.<br>
+    Then, apply  evaluate1D again, but this time to the vector of points obtained from the previous step, using parameter v. This step interpolates between the curves defined by the rows, effectively evaluating the surface at (u,v).<br>
+    The final result is a single Vector3D point, which is the point on the Bezier surface corresponding to the parameters u and v.
+
+  </p>
+
+    <img src="2.jpeg" >
+
+<br>
+<br>
+<br>
+<br>
+
+    <h2>Part 3</h2>
+    <p>Steps: <br>
+      <img src="3-code.png"><br>
+      <strong>Initialization of Variables:</strong><br>
+      The function creates a Vector3D object 'normalSum' initialized to (0.0, 0.0, 0.0). This variable then accumulates the area-weighted normals of all neighboring faces of the vertex.<br><br>
+
+      <strong>Iterating Over Incident Half-Edges:</strong><br>
+      Retrieve the starting half-edge of the vertex (he_start) and set 'he' as an iterator to traverse all incident half-edges. <br><br>
+
+      <strong>Boundary Check:</strong><br>
+      If the vertex is on the boundary of the mesh (checked by 'he->isBoundary()'), the function returns the zero vector as its normal, indicating no calculation is needed or possible in this context.<br><br>
+
+      <strong>Loop Over Neighboring Faces:</strong><br>
+      Iterate over all half-edges (and thus faces) adjacent to the vertex. This loop continues until it returns to the starting half-edge, ensuring all incident faces are processed.<br><br>
+
+      <strong>Face Normal Calculation:</strong><br>
+      For each face, calculate its normal by first determining the positions of the vertices that form the face (p0, p1, p2). The cross product of the vectors (p1 - p0) and (p2 - p0) gives a vector perpendicular to the face, i.e., the face normal. This vector is then normalized (unit() is called to make the vector a unit length).<br><br>
+
+      <strong>Area Weighting:</strong><br>
+      The area of the face is approximated as half the norm of the original (before normalization) cross product vector. This approximation works because the magnitude of the cross product gives twice the area of the triangle formed by the vectors. The face normal is then weighted by this area before being added to normalSum.<br><br>
+
+      <strong>Summing and Normalizing:</strong><br>
+      The area-weighted face normal is added to normalSum. This process repeats for all neighboring faces, accumulating an area-weighted sum of the normals. After the loop completes, normalSum is normalized to obtain the final vertex normal. This final step ensures the resulting normal is of unit length, making it suitable for lighting calculations in graphics.
+    </p>
+
+    <p>The teapot with default flat shading and more smooth Phong shading:</p>
+    <img src='3-before.jpeg'>
+    <img src='3-after.jpeg'>
+<br>
+<br>
+<br>
+<br>
+
+    <h2>Part 4</h2>
+    <p>To flip the edge, I first get the outer and inner halfedges, as well as their adjacent vertices, edges, and faces. Then, I updated the connectivity among these half-edges, vertices, and edges. This process does not involve creating new half-edges, vertices, or edges; it merely changes their connectivity relations. The objective here is to flip the connection between two triangles, for example, composed of vertices a, b, c, and d, where b and c are connected. After the flip, a and d should be connected instead.
+
+    During debugging, I used printf statements to display the memory pointers of edges and vertices. By comparing these printed pointers with the edges and vertices selected using the mouse at runtime, I was able to identify their connectivity relations. This approach is very helpful for the process of modifying the connectivity through code to achieve the edge flip.</p>
+    <p>Before edge flip</p>
+    <img src='4-before.jpeg'><br>
+    <p>After edge flip</p>
+    <img src='4-after.jpeg'>
+<br>
+<br>
+<br>
+<br>
+    <h2>Part 5</h2>
+    <p>Similar to Part4, I began by identifying the half-edges, both inner and outer ones, associated with the target edge, as well as the adjacent vertices, edges, and faces. Unlike the edge flip operation, splitting an edge creates one vertex, three edges, six half-edges, and two faces, necessitating the creation of new objects for these components. After creating these new elements, I updated the connectivity relations among the half-edges, vertices, and edges to achieve the edge split operation.
+
+    For debugging, also similar to my approach in the previous task, I used printf to display the pointer values of half-edges, vertices, and edges in the code. By comparing these values with those of the objects selected using the mouse during runtime, it's easy to verify the connectivity relations among them.</p>
+
+    <p>Before edge split</p>
+    <img src='5-before.jpeg'><br>
+    <p>After edge split</p>
+    <img src='5-split.jpeg'><br>
+    <p>Split+Flip</p>
+    <img src='5-split_flip.jpeg'>
+
+<br>
+<br>
+<br>
+<br>
+
+ <h2>Part 6</h2>
+    <p>To use loop subdivision to upsample a mesh, I uses the recommended approach in the hw spec:<br><br>
+
+    1. Update vertex position: compute new positions for all the original mesh vertices according to the Loop subdivision rule, which involves averaging the positions of neighboring vertices and adjusting the original vertex position to smooth out the mesh. This step also marks each vertex as original by setting isNew to false.<br><br>
+
+    2. Create edge vertice: calculate the positions for new vertices that will be placed on the edges of the mesh. These positions are determined by averaging the positions of the edge's endpoints and the opposite vertices of the adjacent faces, creating a smoother transition between mesh elements.<br><br>
+
+    3. Edge Split: split every edge in the mesh, which not only inserts a new vertex at the edge's midpoint (defined by Edge::newPosition) but also divides the adjacent faces, increasing the mesh's detail. Boolean (isNew) is used to distinguish between original and newly created edges, preventing infinite loops.<br><br>
+
+    4. Edge Flip: To further improve mesh smoothness and topology, flip new edges that connect an old and new vertex, adjusting local topology for a more uniform distribution of vertices.<br><br>
+
+    5. Update Vertex Positions: update the mesh vertices with their new positions calculated in steps 1 and 2<br><br>
+
+  Here are the screenshots showing the teapot being upsampled</p>
+
+  <img src='6-1-1.jpeg' style="height:150px; width:auto;">
+  <img src='6-1-2.jpeg' style="height:150px; width:auto;">
+  <img src='6-1-3.jpeg' style="height:150px; width:auto;">
+  <img src='6-1-4.jpeg' style="height:150px; width:auto;"><br><br>
+
+
+    <p>Observations: 
+    Loop subdivision tends to smooth out sharp corners and edges, as the process averages vertex positions. This can lead to the loss of intended sharp features in the original model. To mitigate excessive smoothing, we can pre-split some edges or apply crease algorithms that adjust the subdivision rules for edges marked as sharp, retaining more of the original model's character.</p>
+
+  <p>crease algorithm from class slides</p>
+  <img src='6-slides.png'>
+
+  <p>Here are the screenshots showing the cube being upsampled</p>
+  <img src='6-2-1.jpeg' style="height:150px;width:auto;">
+  <img src='6-2-2.jpeg' style="height:150px;width:auto;">
+  <img src='6-2-3.jpeg' style="height:150px;width:auto;">
+  <img src='6-2-4.jpeg' style="height:150px;width:auto;">
+  <img src='6-2-5.jpeg' style="height:150px;width:auto;">
+  <img src='6-2-6.jpeg' style="height:150px;width:auto;"><br><br>
+  <p>It can be seen that the cube becomes  asymmetric after repeated subdivisions.</p>
+
+  <p>To mitigate the asymmetry, I split each edge on a cube's face to form an "X" pattern before applying Loop subdivisions. As can be seen from the following screenshots, a symmetric circular cube is shown after several iterations. </p>
+  <img src='6-3-1.jpeg'><br>
+  <img src='6-3-2.jpeg' style="height:150px;width:auto;">
+  <img src='6-3-3.jpeg' style="height:150px;width:auto;">
+  <img src='6-3-4.jpeg' style="height:150px;width:auto;">
+  <img src='6-3-5.jpeg' style="height:150px;width:auto;"><br><br>
+  <p>By splitting each edge and adding a vertex in the middle, the lengths of the edges around each face are more consistent (averaged). When Loop subdivision is applied, the algorithm can more evenly distribute the new vertices, as it relies on edge lengths to compute new vertex positions. The "X" pattern also ensures that each face of the cube is divided in a symmetrical manner, creating a consistent pattern of connectivity across the mesh. </p>
+
+<br>
+<br>
+<br>
+<br>
+    </div>
+  </body>
 </html>
