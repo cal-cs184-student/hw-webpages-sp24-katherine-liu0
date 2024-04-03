@@ -1,7 +1,211 @@
-<html>
-	<head>
-	</head>
-	<body>
-		Homework 4 index.html here
-	</body>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 600px;
+    margin: auto;
+    text-align: left;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+  h2{
+    font-weight: 700;
+    font-size: 32px;
+  }
+  img{
+    width: 600px;
+  }
+</style>
+<title>CS 284A Mesh Editor</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 284A: Computer Graphics and Imaging, Spring 2024</h1>
+<h1 align="middle">Project 4: Cloth Simulator</h1>
+<h2 align="middle">KATHERINE LIU</h2>
+ <h2><a href='https://cal-cs184-student.github.io/hw-webpages-sp24-katherine-liu0/hw4/index.html'>link: https://cal-cs184-student.github.io/hw-webpages-sp24-katherine-liu0/hw4/index.html</a></h2>
+
+<br><br>
+
+<div>
+
+<h2>Overview</h2>
+<p>
+In this assignment, I implemented a real-time cloth simulation using a mass and spring-based system, focusing on building the necessary data structures for discretely representing cloth and incorporating physical constraints to simulate realistic behavior. My process includes applying numerical integration techniques for animating cloth movement and handling both object collisions and self-collisions to prevent clipping. A key part of the project involves experimenting with various parameters, such as the spring constant and cloth density, to observe their effects on the cloth's behavior, including draping, folding, and settling. This allows me to simulate different fabric types and their physical properties accurately.</p>
+
+<br>
+<h2>Part I: Masses and springs</h2>
+<p>To build a grid of masses and springs for my cloth simulation, I first calculated the spacing between points based on the cloth's width and height, and the number of points in each dimension. I then iterated through each grid point, creating <span style="text-decoration: underline;">PointMass</span> objects with positions determined by their x and y indices, adjusted for either horizontal or vertical orientation, and marked them as not pinned by default. For any points specified in the pinned array, I set them to be immovable, ensuring parts of the cloth could be fixed in space. Following the mass creation, I established springs between adjacent points to simulate structural integrity, adding structural springs between each point and its immediate neighbors, shearing springs diagonally to oppose shear deformation, and bending springs to connect points two steps apart in both directions for increased cloth flexibility. </p>
+<p>Some screenshots of scene/pinned2.json</p>
+<img src="1-1.png"><br>
+<img src="1-2.png"><br>
+<img src="1-3.png"><br>
+<br>
+<p>What the wireframe looks like when</p> 
+<p>(1) without any shearing constraints</p>
+<img src="1-noshearing.png"><br><br>
+<p>(2) with only shearing constraints</p>
+<img src="1-onlyshearing.png"><br><br>
+<p>(3) with all constraints.</p>
+<img src="1-all.png"><br><br>
+
+<h2>Part II: Simulation via numerical integration</h2>
+<p>Experimenting with some the parameters in the simulation</p>
+<h3>Spring constant ks</h3>
+<p>A low spring constant results in the cloth being very flexible and having more creases. The cloth behaves more like a fluid or a thin silk than a solid fabric. With a high spring constant, the cloth becomes much stiffer and holds its shape better, showing minimal creases.</p>
+<h4>ks=500 N/m</h4>
+<img src="2-ks500.png">
+<h4>ks=5000 N/m</h4>
+<img src="2-ks5000-den15-damp0.2.png">
+<h4>ks=50000 N/m</h4>
+<img src="2-ks50000.png"><br>
+<br>
+
+<h3>Density</h3>
+<p>Increasing the density of the cloth makes it heavier.A heavier cloth has more creases under its own weight and stretches more before coming to rest.Decreasing the density makes the cloth lighter, which exhibits less sagging under gravity. It will have less stretching and may come to rest more quickly compared to a heavier cloth. </p>
+<h4>density = 1 g/cm^2</h4>
+<img src="2-d1.png">
+<h4>density = 15 g/cm^2</h4>
+<img src="2-ks5000-den15-damp0.2.png">
+<h4>density = 50 g/cm^2</h4>
+<img src="2-d50.png"><br>
+<br>
+<h3>Damping (please see <a href='https://cal-cs184-student.github.io/hw-webpages-sp24-katherine-liu0/hw4/index.html'>webpage</a> for video)</h3>
+<p>Increasing the damping parameter reduces the oscillations and vibrations within the cloth by dissipating energy more rapidly. The cloth looks more rigid and settles to a rest position faster. Decreasing the damping allows the cloth to retain more energy from movements and forces, resulting in longer-lasting oscillations and a more dynamic response, similar to the behavior of lightweight and loosely woven fabrics that flutter easily.</p>
+
+<h4>damping = 0.08</h4>
+<video width="600" controls autoplay loop muted>
+  <source src="2-damping0.08.mp4" type="video/mp4">
+</video><br>
+<h4>damping = 0.2</h4>
+<video width="600" controls autoplay loop muted>
+  <source src="2-damping0.2.mp4" type="video/mp4">
+</video><br>
+<h4>damping = 0.57</h4>
+<video width="600" controls autoplay loop muted>
+  <source src="2-damping0.57.mp4" type="video/mp4">
+</video><br>
+
+<p>screenshot of the shaded cloth from scene/pinned4.json in its final resting state</p>
+<img src="2-final.png"><br><br>
+
+<h2>Part III: Handling collisions with other objects</h2>
+<p>The collision detection algorithms that identify when a point mass of the cloth comes into close proximity or intersects with another object. Once a potential collision is detected, I applied a collision response mechanism to adjust the position and velocity of the affected point mass, effectively simulating the physical bounce and resistance that would occur in real life. This involved calculating the normal vector at the point of collision and reflecting or adjusting the point mass's trajectory to prevent it from penetrating the object, instead making it slide along the object's surface or bounce off, depending on the material properties of both the cloth and the object. </p>
+<p>Adjusting the spring constant has a direct impact on the cloth's behavior. Lower values result in a softer, more pliable cloth that can easily wrap around objects, producing many small creases. Higher values create a stiffer cloth that maintains more of its shape and has fewer, less creases.</p>
+
+<h4>ks=500 N/m</h4>
+<img src="3-500.png">
+<h4>ks=5000 N/m</h4>
+<img src="3-5000.png">
+<h4>ks=50000 N/m</h4>
+<img src="3-50000.png"><br>
+<br>
+
+<p>screenshot of the shaded cloth lying peacefully at rest on the plane</p>
+<img src="3-plane.png">
+
+<h2>Part IV: Handling self-collisions</h2>
+
+<h3>self-collision</h3>
+<img src="4-1.png" width="200px"><img src="4-2.png" width="200px"><img src="4-3.png" width="200px"><img src="4-4.png" width="200px">
+
+<br>
+<br>
+<h3>Varying density and ks (please see <a href='https://cal-cs184-student.github.io/hw-webpages-sp24-katherine-liu0/hw4/index.html'>webpage</a> for video)</h3>
+<p>Increasing the density of the cloth makes it heavier, which will have a more pronounced gravitational pull, leading to faster and potentially more forceful interactions when different parts of the cloth collide; Decreasing the density results in a lighter cloth that falls more slowly and gently onto itself. Lighter cloths exhibit less forceful self-collisions, leading to softer and less compact folds. The cloth can flutter or billow more easily as it falls. </p>
+<p>A higher spring constant results in a stiffer cloth that is more resistant to bending and folding. It tends to maintain more of its shape, leading to broader and less pronounced folds. When parts of the cloth collide, they are less likely to deform significantly upon impact. A lower spring constant makes the cloth more flexible and susceptible to bending and folding. As a result, when it falls on itself, it can create a larger number of more intricate and detailed folds. The increased flexibility allows the cloth to conform more closely to itself.</p>
+
+<br>
+<p>Default: density = 15 g/cm^2, ks = 5000 N/m</p>
+<video width="600" controls autoplay loop muted>
+  <source src="4-default.mp4" type="video/mp4">
+</video>
+
+<br><br>
+<p>density = 1 g/cm^2, ks = 5000 N/m</p>
+<video width="600" controls autoplay loop muted>
+  <source src="4-d1.mp4" type="video/mp4">
+</video>
+
+<br><br>
+<p>density = 50 g/cm^2, ks = 5000 N/m</p>
+<video width="600" controls autoplay loop muted>
+  <source src="4-d50.mp4" type="video/mp4">
+</video>
+
+<br><br>
+<p>density = 15 g/cm^2, ks = 500 N/m</p>
+<video width="600" controls autoplay loop muted>
+  <source src="4-ks500.mp4" type="video/mp4">
+</video>
+
+<br><br>
+<p>density = 15 g/cm^2, ks = 50000 N/m</p>
+<video width="600" controls autoplay loop muted>
+  <source src="4-ks50000.mp4" type="video/mp4">
+</video>
+
+<h2>Part V: Shaders</h2>
+<h3> What is a shader program and how vertex and fragment shaders work together to create lighting and material effects:</h3>
+<p>A shader program is runned on the GPU (instead of CPU) to control the rendering of graphics by using vertex data and pixel data to create visual effects, including lighting and material properties on 3D models. It consists of the vertex shader and the fragment shader. The vertex shader operates on each vertex of a 3D model, performing transformations (e.g. translation, rotation, and scaling) and calculating vertex lighting. It passes transformed vertices and any relevant lighting or texture information to the fragment shader. The fragment shader then operates on every pixel that will be drawn to the screen, determining its final color by applying lighting calculations based on light source properties, material properties of the object, and the vertex information received.</p>
+
+<br>
+ <h3>Blinn-Phong shading model</h3>
+ <p>The Blinn-Phong shading model simulates the way light interacts with surfaces to produce realistic lighting effects. The model has 3 main components: ambient, diffuse, and specular reflections. Ambient reflection represents indirect light that scatters evenly across the surface, giving the object a base color even in shadows; Diffuse reflection simulates the scattering of light from a light source directly hitting the surface, affecting parts of the surface differently based on their orientation to the light source. The specular reflection is calculated using the halfway vector between the viewer's perspective and the light source direction, rather than the reflection vector used in the original Phong model. This approach better simulates the shiny spots where the light is directly reflected towards the viewer, giving objects a glossy appearance. The Blinn-Phong model is very efficient and effective in simulating realistic lighting</p>
+
+ <h4>Ambient only</h4>
+ <img src="5-ambient.png"><br>
+  <h4>Specular only</h4>
+ <img src="5-specular.png"><br>
+  <h4>Diffuse only</h4>
+ <img src="5-diffuse.png"><br>
+  <h4>entire Blinn-Phong</h4>
+ <img src="5-blinnphong.png"><br>
+
+ <br>
+  <h3>Texture mapping</h3>
+  <p>texture_4</p>
+   <img src="5-texture.png"><br>
+
+<br><br>
+   <p>Bump mapping manipulates the surface normals during rendering. It only affects the shading, not the object's shape or silhouette. Comparatively, displacement mapping modifies the geometry of the surface based on the texture information, as we can see in the screenshot that the sphere does not have a smooth surface.</p>
+     <h3>Bump mapping</h3>
+     <p>texture_3</p>
+   <img src="5-bump1.png"><br>
+   <img src="5-bump2.png"><br>
+
+   <h3>Displacement mapping</h3>
+     <p>texture_3</p>
+   <img src="5-displacement.png"><br>
+
+<br>
+  <h3>Varying coarseness</h3>
+  <p> The coarseness in bump mapping affects the perceived roughness or smoothness of the surface. A coarser (16) bump map produces slightly more pronounced bumps and shadows. A finer bump (128) map results in subtler texture details. <br>The coarseness of displacement mapping affects the geometric complexity of the surface. A coarser (16) displacement map can significantly alter the silhouette of the object, creating large, visible protrusions. A finer (128) map adjusts the surface detail at a smaller scale. The rendering impact of different coarseness levels is more obvious with displacement mapping than with bump mapping due to the actual geometric changes.</p><br>
+  <p>-o 16 -a 16</p>
+  <p>Bump</p>
+  <img src="5-16bump.png" width="300">
+  <p>Displacement</p>
+  <img src="5-16displacement.png" width="300"><br><br><br>
+  <p>-o 128 -a 128</p>
+  <p>Bump</p>
+  <img src="5-128bump.png" width="300">
+  <p>Displacement</p>
+  <img src="5-128displacement.png" width="300"><br><br><br>
+
+
+<h3>Mirror shading</h3>
+<img src="5-mirror1.png">
+<img src="5-mirror2.png">
+
+
+</body>
 </html>
